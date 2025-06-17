@@ -1,0 +1,56 @@
+services:
+  web:
+    container_name: eemeli-web
+    build: .
+    volumes:
+      - ./web:/var/www/html
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "8083:80"
+      - "8000:8000"
+    networks:
+      - app_network
+  db:
+    image: mariadb:10
+    container_name: eemeli-db
+    environment:
+      MARIADB_USER: web
+      MARIADB_PASSWORD: web_dev
+      MARIADB_ROOT_PASSWORD: root_pass
+      MARIADB_DATABASE: eemeli_db
+    volumes:
+      - eemeli-data:/var/lib/mysql
+      - "./mysql_tmp:/tmp/"
+    # Uncomment the following lines if you want to expose the database port
+    # ports: 
+    #   - 3306:3306
+    networks:
+      - app_network
+  pma:
+    image: phpmyadmin
+    links:
+      - db
+    container_name: eemeli-pma
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root_pass
+    ports:
+      - "8084:80"
+    networks:
+      - app_network
+  redis:
+    image: redis:latest
+    container_name: eemeli-redis
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_PASSWORD=WAexD1UWmN0ABc5oZXlHLlcEQEsuqJiY
+    networks:
+      - app_network
+networks:
+  app_network:
+volumes:
+  eemeli-data:
